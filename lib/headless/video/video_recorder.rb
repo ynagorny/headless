@@ -36,6 +36,11 @@ class Headless
       extra = @extra.join(' ')
 
       CliUtil.fork_process("#{CliUtil.path_to('ffmpeg')} -y -r #{@frame_rate} #{group_of_pic_size_option} -s #{dimensions} -f x11grab -i :#{@display} -vcodec #{@codec} #{extra} #{@tmp_file_path}", @pid_file_path, @log_file_path)
+      # give the file 10 seconds to create, then quietly give up
+      Retryable.retryable(:tries => 100, :sleep => 0.1) do
+        fail "File #{@tmp_file_path} is not created yet" unless File.exists?(@tmp_file_path)
+      end rescue nil
+      
       at_exit do
         exit_status = $!.status if $!.is_a?(SystemExit)
         stop_and_discard
