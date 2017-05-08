@@ -1,4 +1,5 @@
 require 'tempfile'
+require 'retryable'
 
 class Headless
   class VideoRecorder
